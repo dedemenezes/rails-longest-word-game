@@ -10,37 +10,34 @@ class GamesController < ApplicationController
 
   def score
     @grid_array = params[:letters].split
-    @answer = params[:user_word]
-    url = "https://wagon-dictionary.herokuapp.com/#{@answer}"
-    user_serialized = URI.open(url).read
-    @word = JSON.parse(user_serialized)
+    @attempt = params[:user_word]
+    url = "https://wagon-dictionary.herokuapp.com/#{@attempt}"
+    @word = JSON.parse(URI.open(url).read)
     if @word['found']
-      @user_array = []
-      @answer.each_char { |letter| @user_array << letter }
+      @attempt_array = @attempt.chars.map { |letter| letter }
 
       @user_hash = {}
-      @user_array.each do |letter|
-        @user_hash[letter.to_sym] = @user_array.count(letter)
+      @attempt_array.each do |letter|
+        @user_hash[letter.to_sym] = @attempt_array.count(letter)
       end
 
       @grid_hash = {}
       @grid_array.each do |letter|
         @grid_hash[letter.to_sym] = @grid_array.count(letter)
       end
+      answer_check = []
+      answer_check = @user_hash.map do |k, v| 
+        answer_check << (@grid_hash[k.to_sym] >= v)
+      end
       
-      @grid_hash.each { |k, v| puts @user_hash[k.to_sym] == v }
-      raise
-
-
-      
-      if @user_array.empty?
-        @answer_check = "CONGRATULATIONS! <strong>#{@answer.upcase}</strong> is a valid word and all letters are inside the grid"
+      if answer_check.include? false
+        @attempt_check = "Sorry but <strong>#{@attempt.upcase}</strong> can't be build out of #{@grid_array.join(", ").upcase}"
       else
-        @answer_check = "Sorry but <strong>#{@answer.upcase}</strong> can't be build out of #{@grid.join(", ").upcase}"
+        @attempt_check = "CONGRATULATIONS! <strong>#{@attempt.upcase}</strong> is a valid word and all letters are inside the grid"
       end
     else
-      @answer_check = "Sorry but <strong>#{@answer.upcase}</strong> is not an english word"
+      @attempt_check = "Sorry but <strong>#{@attempt.upcase}</strong> is not an english word"
     end
-    @answer_check
+    @attempt_check
   end
 end
