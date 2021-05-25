@@ -3,6 +3,8 @@
   
   <p><%= @result[:content].html_safe %></p>
   <p><strong>Score:</strong> <%= @result[:score].round(2) %> points</p>
+  <p>Match started at: <%= @start_time.strftime("%T") %></p>
+  <p>Match ended at: <%= @end_time.strftime("%T") %></p>
   
   <%= link_to "Play a new game", new_path %>
 </div>
