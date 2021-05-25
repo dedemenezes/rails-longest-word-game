@@ -1,14 +1,17 @@
 require 'open-uri'
 require 'json'
+require 'time'
 
 class GamesController < ApplicationController
   
   def new
+    @start_time = ""
     @letters = []
     10.times { @letters.push(('a'..'z').to_a.sample)}
   end
 
   def score
+    start_time = Time.parse(params[:start])
     grid_word = params[:grid_word].gsub(" ", "")
     attempt = params[:user_word]
     if word_exist?(attempt)
@@ -23,11 +26,14 @@ class GamesController < ApplicationController
         @answer_check << (@grid_hash[k.to_sym] >= v)
       end
       
-      @attempt_check = check_answer?(@answer_check, attempt)
+      @attempt_check = check_result?(@answer_check, attempt)
     else
       @attempt_check = "Sorry but <strong>#{attempt.upcase}</strong> is not an english word"
     end
-    @attempt_check
+    @points = checking_score(attempt, start_time)
+    @result = { content: @attempt_check, score: @points }
+
+    return @result
   end
 
   def word_exist?(attempt)
@@ -43,12 +49,18 @@ class GamesController < ApplicationController
     hash
   end
 
-  def check_answer?(answer_array, attempt)
+  def check_result?(answer_array, attempt)
     if answer_array.include? false
       result = "Sorry but <strong>#{attempt.upcase}</strong> can't be build out of #{grid_array.join(", ").upcase}"
     else
       result = "<strong>CONGRATULATIONS!</strong> #{attempt.upcase} is a valid word and all letters are inside the grid"
     end
     result
+  end
+
+  def checking_score(attempt, start_time)
+    word_points = attempt.size * 2
+    elapsed_time = Time.now - start_time
+    score = (word_points / elapsed_time.round(2)) * 100
   end
 end
