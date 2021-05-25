@@ -9,35 +9,46 @@ class GamesController < ApplicationController
   end
 
   def score
-    @grid_array = params[:letters].split
-    @attempt = params[:user_word]
-    url = "https://wagon-dictionary.herokuapp.com/#{@attempt}"
-    @word = JSON.parse(URI.open(url).read)
-    if @word['found']
-      @attempt_array = @attempt.chars.map { |letter| letter }
-
-      @user_hash = {}
-      @attempt_array.each do |letter|
-        @user_hash[letter.to_sym] = @attempt_array.count(letter)
-      end
-
+    grid_word = params[:grid_word].gsub(" ", "")
+    attempt = params[:user_word]
+    if word_exist?(attempt)
+      @attempt_hash = {}
+      @attempt_hash = hash_counter(attempt)
+      
       @grid_hash = {}
-      @grid_array.each do |letter|
-        @grid_hash[letter.to_sym] = @grid_array.count(letter)
-      end
-      answer_check = []
-      answer_check = @user_hash.map do |k, v| 
-        answer_check << (@grid_hash[k.to_sym] >= v)
-      end
+      @grid_hash = hash_counter(grid_word)
 
-      if answer_check.include? false
-        @attempt_check = "Sorry but <strong>#{@attempt.upcase}</strong> can't be build out of #{@grid_array.join(", ").upcase}"
-      else
-        @attempt_check = "<strong>CONGRATULATIONS!</strong> #{@attempt.upcase} is a valid word and all letters are inside the grid"
+      @answer_check = []
+      @attempt_hash.map do |k, v| 
+        @answer_check << (@grid_hash[k.to_sym] >= v)
       end
+      
+      @attempt_check = check_answer?(@answer_check, attempt)
     else
-      @attempt_check = "Sorry but <strong>#{@attempt.upcase}</strong> is not an english word"
+      @attempt_check = "Sorry but <strong>#{attempt.upcase}</strong> is not an english word"
     end
     @attempt_check
+  end
+
+  def word_exist?(attempt)
+    url = "https://wagon-dictionary.herokuapp.com/#{attempt}"
+    word = JSON.parse(URI.open(url).read)
+    word['found']
+  end
+
+  def hash_counter(str)
+    hash = {}
+    str.each_char { |c| hash[c.to_sym] = str.count(c) }
+
+    hash
+  end
+
+  def check_answer?(answer_array, attempt)
+    if answer_array.include? false
+      result = "Sorry but <strong>#{attempt.upcase}</strong> can't be build out of #{grid_array.join(", ").upcase}"
+    else
+      result = "<strong>CONGRATULATIONS!</strong> #{attempt.upcase} is a valid word and all letters are inside the grid"
+    end
+    result
   end
 end
