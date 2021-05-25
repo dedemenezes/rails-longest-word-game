@@ -29,11 +29,11 @@ class GamesController < ApplicationController
       answer_check = @user_hash.map do |k, v| 
         answer_check << (@grid_hash[k.to_sym] >= v)
       end
-      
+
       if answer_check.include? false
         @attempt_check = "Sorry but <strong>#{@attempt.upcase}</strong> can't be build out of #{@grid_array.join(", ").upcase}"
       else
-        @attempt_check = "CONGRATULATIONS! <strong>#{@attempt.upcase}</strong> is a valid word and all letters are inside the grid"
+        @attempt_check = "<strong>CONGRATULATIONS!</strong> #{@attempt.upcase} is a valid word and all letters are inside the grid"
       end
     else
       @attempt_check = "Sorry but <strong>#{@attempt.upcase}</strong> is not an english word"
